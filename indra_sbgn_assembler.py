@@ -230,7 +230,3 @@ def text_to_sbgn(text=None, trips_xml=None):
 if __name__ == '__main__':
     sbgn_output = text_to_sbgn(trips_xml=open('trips_sample.xml').read())
     print sbgn_output
-    with open('output.sbgn', 'w') as f:
-        f.write(sbgn_output)
-    print
-    print ">> SBGN content written to output.sbgn <<"

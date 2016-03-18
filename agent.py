@@ -51,7 +51,7 @@ def generate_id(length, symbols=_id_symbols):
     return ''.join(symbol_gen)
 
 if len(sys.argv) == 1:
-    print "Usage: client.py <room_id>"
+    print "Usage: agent.py <room_id>"
     sys.exit(1)
 else:
     room_id = sys.argv[1]
