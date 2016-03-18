@@ -21,7 +21,8 @@ Installation / Setup
 Running the agent
 -----------------
 
-The agent explicitly connects to localhost:3000 at the moment, but it should
+First, you'll need an instance of Sbgnviz-Collaborative-Editor running at
+localhost:3000. The server address is hardcoded at the moment, but it should
 be trivial to modify the code to change that if necessary. The room ID is
 provided as a command-line argument, though::
 
