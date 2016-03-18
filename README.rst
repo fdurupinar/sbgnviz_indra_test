@@ -8,11 +8,15 @@ Installation / Setup
 
     pip install -r requirements.txt
 
+   Note that if you have problems installing cython or jnius-indra, which are
+   dependencies of indra, you can ignore them as this demo doesn't need that
+   functionality.
+
 2. Verify that INDRA-SBGN assembly works::
 
     python indra_sbgn_assembler.py
 
-  You should see some generated SBGN-ML output.
+   You should see some generated SBGN-ML output.
 
 Running the agent
 -----------------
@@ -35,7 +39,10 @@ to be assembled by writing it in the chat with the prefix "indra:". For example:
 
     indra: EGFR binds EGF. EGFR bound to EGF phosphorylates itself at Y1068.
 
+The agent will acknowledge that it has accepted text for processing, and then
+make another announcement when the processing is complete.
+
 Note that the parser used behind the scenes is slow. Even five or six simple sentences
 could take upwards of one minute to process. Also keep in mind that the canvas
 is cleared before each new model is loaded, i.e. it does not add nodes
-incrementally to an existing map. 
+incrementally to an existing map.
