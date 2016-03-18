@@ -2,15 +2,47 @@ import sys
 import time
 import random
 from socketIO_client import SocketIO
+import indra_sbgn_assembler
 
 USER_ID_LEN = 32
 
-def sa_callback(users):
-    print 'Users:', ', '.join(x['userName'] for x in users)
+current_users = []
+last_seen_msg_id = None
 
-def msg_callback(data):
-    if isinstance(data, dict):
-        print 'comment: <%(userName)s> %(comment)s' % data
+def ack_subscribe_agent(user_list):
+    on_user_list(user_list)
+
+def on_user_list(user_list):
+    global current_users
+    current_users = user_list
+    print 'Users:', ', '.join(x['userName'] for x in current_users)
+
+def on_message(data):
+    global last_seen_msg_id
+    if isinstance(data, dict) and data['id'] != last_seen_msg_id:
+        last_seen_msg_id = data['id']
+        if {'id': user_id} in data['targets']:
+            if data['comment'].startswith('indra:'):
+                text = data['comment'][6:]
+                load_model_from_text(text, data['userName'])
+            print '<%s> %s' % (data['userName'], data['comment'])
+
+def load_model_from_text(text, requester_name):
+    say("%s: Got it. Assembling model..." % requester_name)
+    sbgn_content = indra_sbgn_assembler.text_to_sbgn(text)
+    say("%s: Assembly complete, now loading model." % requester_name)
+    socket.emit('agentNewFileRequest', {})
+    time.sleep(2)
+    socket.emit('agentLoadFileRequest', {'param': sbgn_content})
+    socket.emit('agentRunLayoutRequest', {})
+
+def say(text):
+    msg = {'room': room_id, 'comment': text, 'userName': user_name,
+           'userId': user_id, 'time': 1,
+           'targets': [{'id': user['userId']} for user in current_users],
+           }
+    socket.emit('agentMessage', msg, lambda: None)
+
 
 _id_symbols = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 def generate_id(length, symbols=_id_symbols):
@@ -19,33 +51,24 @@ def generate_id(length, symbols=_id_symbols):
     return ''.join(symbol_gen)
 
 if len(sys.argv) == 1:
-    sbgn_file = 'output.sbgn'
+    print "Usage: client.py <room_id>"
+    sys.exit(1)
 else:
-    sbgn_file = sys.argv[1]
-with open(sbgn_file) as f:
-    sbgn_content = f.read().decode('utf8')
+    room_id = sys.argv[1]
+
+user_name = 'INDRA'
+user_id = generate_id(USER_ID_LEN)
 
 socket = SocketIO('localhost', 3000)
-
-sa_payload = {'userName': 'INDRA',
-              'room': '6cbcf2d9-15ad-4be7-82a8-02b35672d88c',
-              'userId': generate_id(USER_ID_LEN)}
-alfr_payload = {'param': sbgn_content}
-
-socket.on('message', msg_callback)
-
-socket.emit('subscribeAgent', sa_payload, sa_callback)
-#msg = "Hello from INDRA!"
-#socket.emit('agentMessage', msg, lambda(args): None)
-print "Loading model..."
-socket.emit('agentNewFileRequest', {})
-time.sleep(2)
-socket.emit('agentLoadFileRequest', alfr_payload)
-print "Running layout"
-socket.emit('agentRunLayoutRequest', {})
+sa_payload = {'userName': user_name,
+              'room': room_id,
+              'userId': user_id}
+socket.on('message', on_message)
+socket.on('userList', on_user_list)
+socket.emit('subscribeAgent', sa_payload, ack_subscribe_agent)
 
 try:
-    socket.wait(3)
+    socket.wait()
 except KeyboardInterrupt:
     pass
 print "Disconnecting..."

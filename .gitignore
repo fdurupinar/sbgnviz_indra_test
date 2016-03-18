@@ -1,2 +1,4 @@
 /sbgn
 /output.sbgn
+/trips_output.xml
+*.pyc
