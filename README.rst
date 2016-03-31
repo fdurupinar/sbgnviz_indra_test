@@ -12,11 +12,7 @@ Installation / Setup
    dependencies of indra, you can ignore them as this demo doesn't need that
    functionality.
 
-2. Verify that INDRA-SBGN assembly works::
-
-    python indra_sbgn_assembler.py
-
-   You should see some generated SBGN-ML output.
+That's it!
 
 Running the agent
 -----------------
