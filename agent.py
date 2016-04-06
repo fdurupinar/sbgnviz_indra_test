@@ -9,6 +9,10 @@ USER_ID_LEN = 32
 current_users = []
 last_seen_msg_id = None
 
+def run_layout(data):
+    say(data)
+    socket.emit('agentRunLayoutRequest', {'room': room_id, 'userId': user_id})
+
 def ack_subscribe_agent(user_list):
     on_user_list(user_list)
 
@@ -31,10 +35,10 @@ def load_model_from_text(text, requester_name):
     say("%s: Got it. Assembling model..." % requester_name)
     sbgn_content = indra.sbgn_assembler.text_to_sbgn(text)
     say("%s: Assembly complete, now loading model." % requester_name)
-    socket.emit('agentNewFileRequest', {})
+    socket.emit('agentNewFileRequest', {'userId': user_id})
     time.sleep(2)
-    socket.emit('agentLoadFileRequest', {'param': sbgn_content})
-    socket.emit('agentRunLayoutRequest', {})
+    socket.emit('agentLoadFileRequest', {'userId': user_id, 'param': sbgn_content}, run_layout)
+
 
 def say(text):
     msg = {'room': room_id, 'comment': text, 'userName': user_name,
